@@ -1,0 +1,5 @@
+{
+  "name": "Qualification Development System (QDS)",
+  "description": "A modern, responsive web application to automate and streamline the Qualification Development process under NAVTTC’s CBT&A framework, designed for various user roles including administrators, industry experts, and training providers.",
+  "requestFramePermissions": []
+}
