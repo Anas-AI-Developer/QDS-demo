@@ -16,24 +16,7 @@ interface Module {
   learningUnits: LearningUnit[];
 }
 
-const initialModules: Module[] = [
-  {
-    id: 1,
-    title: 'Module 1: Workshop Safety and Tools',
-    learningUnits: [
-      { id: 1, description: 'Identify and use workshop tools and equipment.' },
-      { id: 2, description: 'Apply workshop safety rules and procedures.' },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Module 2: Automotive Electrical Systems',
-    learningUnits: [
-      { id: 1, description: 'Understand basic electrical principles.' },
-      { id: 2, description: 'Read and interpret wiring diagrams.' },
-    ],
-  },
-];
+const initialModules: Module[] = [];
 
 const CurriculumForm: React.FC = () => {
     const [modules, setModules] = useState<Module[]>(initialModules);

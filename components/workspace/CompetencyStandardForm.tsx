@@ -18,26 +18,7 @@ interface CompetencyUnit {
     knowledgeCriteria: Criteria[];
 }
 
-const initialUnits: CompetencyUnit[] = [
-    {
-        id: 'cu1',
-        code: 'B2',
-        title: 'Repair lighting system of the vehicle.',
-        performanceCriteria: [
-            { id: 'p1', code: 'P1.', description: 'Select tools and equipment according to job requirement.' },
-            { id: 'p2', code: 'P2.', description: 'Repair faults in the components as diagnosed according to procedures.' },
-            { id: 'p3', code: 'P3.', description: 'Adopt a method for repairing systems and components without causing damage to them' },
-            { id: 'p4', code: 'P4.', description: 'Inspect and verify the fault is removed' },
-            { id: 'p5', code: 'P5.', description: 'Observe occupational health and safety precautions at all times.' },
-        ],
-        knowledgeCriteria: [
-            { id: 'k1', code: 'K1.', description: 'Explain uses of multi-meter, test lamp & toolkit' },
-            { id: 'k2', code: 'K2.', description: 'Define methods and procedures of repairing faults in the components ( harness, switch)' },
-            { id: 'k3', code: 'K3.', description: 'Describe techniques for inspecting and verifying the repair of lighting system.' },
-            { id: 'k4', code: 'K4.', description: 'Define repair specific safety precautions & guidelines.' },
-        ]
-    }
-];
+const initialUnits: CompetencyUnit[] = [];
 
 const CompetencyStandardForm: React.FC = () => {
     const [units, setUnits] = useState<CompetencyUnit[]>(initialUnits);

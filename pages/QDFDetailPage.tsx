@@ -57,6 +57,7 @@ const QDFDetailPage: React.FC = () => {
 
     const [titleWarning, setTitleWarning] = useState('');
     const [showRejectModal, setShowRejectModal] = useState(false);
+    const [showLaunchModal, setShowLaunchModal] = useState(false);
 
     if (!qdfData && !isNew) {
         return <div>QDF not found.</div>;
@@ -71,6 +72,8 @@ const QDFDetailPage: React.FC = () => {
     const showReviewForm = !isNew && qdfData?.decision;
     const showChecklist = canPerformFinalApproval || (qdfData && qdfData.qaChecklist);
     const canAccessWorkspace = qdfData && !isNew && [QDFStatus.IN_DEVELOPMENT, QDFStatus.CS_SUBMITTED_FOR_VALIDATION, QDFStatus.CS_VALIDATED].includes(qdfData.status);
+    const showNominationList = qdfData && !isNew && qdfData.qdcMembers && qdfData.qdcMembers.length > 0 && !canNominateQDC;
+
 
     const handleFormUpdate = (field: keyof QDF, value: any) => {
         if (field === 'title' && isNew) {
@@ -84,6 +87,36 @@ const QDFDetailPage: React.FC = () => {
             }
         }
         setQdfData(prev => ({ ...prev, [field]: value, lastUpdated: new Date().toISOString().split('T')[0] }));
+    };
+
+    const confirmLaunchDevelopment = () => {
+        const timestamp = new Date().toISOString();
+        const updatedQdfData = { ...qdfData, lastUpdated: timestamp.split('T')[0] };
+
+        updatedQdfData.status = QDFStatus.IN_DEVELOPMENT;
+        const index = QDF_DATA.findIndex(q => q.id === updatedQdfData.id);
+        if (index !== -1) {
+            let history = [...updatedQdfData.workflowHistory];
+            const updateWorkflow = (history: WorkflowEvent[], stageName: string, status: 'completed' | 'in_progress', userName?: string, comments?: string): WorkflowEvent[] => {
+                const newHistory = [...history];
+                const event = newHistory.find(e => e.stage === stageName);
+                if (event) {
+                    event.status = status;
+                    event.user = userName || user?.name || 'System';
+                    event.timestamp = timestamp;
+                    if (comments) event.comments = comments;
+                }
+                return newHistory;
+            };
+
+            history = updateWorkflow(history, 'QDC Nomination', 'completed', user?.name);
+            history = updateWorkflow(history, 'QDC Development', 'in_progress', 'QDC Member');
+            updatedQdfData.workflowHistory = history;
+            QDF_DATA[index] = updatedQdfData;
+        }
+
+        setShowLaunchModal(false);
+        navigate('/qdf-management');
     };
 
     const handleAction = (action: 'submit' | 'approve' | 'reject' | 'launch_development' | 'hold' | 'final_approve') => {
@@ -161,16 +194,8 @@ const QDFDetailPage: React.FC = () => {
                 break;
             }
             case 'launch_development': {
-                 updatedQdfData.status = QDFStatus.IN_DEVELOPMENT;
-                 const index = QDF_DATA.findIndex(q => q.id === updatedQdfData.id);
-                 if (index !== -1) {
-                    let history = [...updatedQdfData.workflowHistory];
-                    history = updateWorkflow(history, 'QDC Nomination', 'completed', user?.name);
-                    history = updateWorkflow(history, 'QDC Development', 'in_progress', 'QDC Member');
-                    updatedQdfData.workflowHistory = history;
-                    QDF_DATA[index] = updatedQdfData;
-                 }
-                break;
+                setShowLaunchModal(true);
+                return; // Open modal and wait for confirmation
             }
             case 'hold': {
                 updatedQdfData.status = QDFStatus.ON_HOLD;
@@ -264,11 +289,16 @@ const QDFDetailPage: React.FC = () => {
                         </Card>
                     )}
 
-                    {canNominateQDC && (
+                    {(canNominateQDC || showNominationList) && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>QDC Nomination</CardTitle>
-                                <CardDescription>Nominate committee members for the qualification development. Submit the list to launch the project.</CardDescription>
+                                <CardDescription>
+                                    {canNominateQDC 
+                                        ? "Nominate committee members for the qualification development. Submit the list to launch the project."
+                                        : "The following committee members have been nominated for this qualification."
+                                    }
+                                </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <QDCNominationForm
@@ -277,10 +307,12 @@ const QDFDetailPage: React.FC = () => {
                                     isEditable={canNominateQDC}
                                 />
                             </CardContent>
-                            <CardFooter className="flex justify-end space-x-2">
-                                <Button variant="outline" onClick={() => handleAction('hold')}>Put on Hold</Button>
-                                <Button onClick={() => handleAction('launch_development')}>Submit Nominations & Launch Development</Button>
-                            </CardFooter>
+                            {canNominateQDC && (
+                                <CardFooter className="flex justify-end space-x-2">
+                                    <Button variant="outline" onClick={() => handleAction('hold')}>Put on Hold</Button>
+                                    <Button onClick={() => handleAction('launch_development')}>Submit Nominations & Launch Development</Button>
+                                </CardFooter>
+                            )}
                         </Card>
                     )}
 
@@ -358,6 +390,21 @@ const QDFDetailPage: React.FC = () => {
                     <DialogFooter>
                         <Button variant="secondary" onClick={() => setShowRejectModal(false)}>Cancel</Button>
                         <Button variant="destructive" onClick={() => { handleAction('reject'); setShowRejectModal(false); }}>Confirm Rejection</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showLaunchModal} onOpenChange={setShowLaunchModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm Launch Development</DialogTitle>
+                        <DialogDescription>
+                            You are about to submit {qdfData.qdcMembers?.length || 0} nominated members and officially launch the development phase. The status will be updated to "In Development". Are you sure you want to proceed?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setShowLaunchModal(false)}>Cancel</Button>
+                        <Button onClick={confirmLaunchDevelopment}>Confirm & Launch</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

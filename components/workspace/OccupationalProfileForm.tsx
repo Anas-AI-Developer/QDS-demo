@@ -16,24 +16,7 @@ interface Duty {
   tasks: Task[];
 }
 
-const initialDuties: Duty[] = [
-  {
-    id: 1,
-    description: 'Manage Vehicle Lighting Systems',
-    tasks: [
-      { id: 1, description: 'Diagnose electrical faults in lighting circuits.' },
-      { id: 2, description: 'Repair or replace faulty bulbs, fuses, and relays.' },
-    ],
-  },
-  {
-    id: 2,
-    description: 'Perform Routine Vehicle Maintenance',
-    tasks: [
-      { id: 1, description: 'Change engine oil and filters.' },
-      { id: 2, description: 'Inspect and top up fluid levels.' },
-    ],
-  },
-];
+const initialDuties: Duty[] = [];
 
 
 const OccupationalProfileForm: React.FC = () => {
